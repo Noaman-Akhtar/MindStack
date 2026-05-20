@@ -146,11 +146,36 @@ app.post("/api/v1/content", middleware, async (req, res) => {
 });
 app.get("/api/v1/content", middleware, async (req, res) => {
     const userId = req.userId;
-    const content = await ContentModel.find({ userId: userId }).populate(
-        "userId",
-        "username"
-    );
-    res.json({ content });
+    const page = Number (req.query.page) || 1;
+    const limit = Number(req.query.limit) || 12;
+    const type = req.query.type as string | undefined;
+
+    const query: any = {userId};
+
+    if(type && type!="all"){
+        query.type = type;
+    }
+
+    const skip = (page - 1 ) * limit;
+
+    const content = await ContentModel.find(query)
+    .sort({_id:-1})
+    .skip(skip)
+    .limit(limit)
+    .populate("userId","username");
+
+    const totalItems = await ContentModel.countDocuments(query);
+    const totalPages = Math.ceil(totalItems /limit);
+
+    res.json({
+        content,
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        hasMore: page < totalPages,
+    });
+
 });
 
 app.delete("/api/v1/content/:id", middleware, async (req, res) => {
