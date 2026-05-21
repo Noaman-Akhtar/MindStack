@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type Delta from "quill-delta";
 import "../App.css";
 import { Button } from "../components/ui/Button";
@@ -12,6 +12,7 @@ import { CreateContentModal } from "../components/modals/CreateContentModal";
 import { ViewContentModal } from "../components/modals/viewModal";
 import { SearchContentModel } from "../components/modals/SearchContentModel";
 import { DeleteConfirmModal } from "../components/modals/DeleteConfirmModal";
+import { LoaderCircle } from "lucide-react";
 
 type Filter = "all" | "twitter" | "youtube" | "random";
 
@@ -27,7 +28,8 @@ type Content = {
   score: number | undefined;
 };
 
-const CONTENT_PAGE_LIMIT = 12;
+const CONTENT_PAGE_LIMIT = 6;
+const SCROLL_LOAD_OFFSET = 500;
 
 type DashboardNavProps = {
   scrolled: boolean;
@@ -68,6 +70,7 @@ function Dashboard() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [search, setSearch] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
@@ -88,7 +91,10 @@ function Dashboard() {
   }, []);
 
   const fetchCards = async (pageToFetch = 1, replace = false) => {
+    if (loadingRef.current) return;
+
     try {
+      loadingRef.current = true;
       setLoading(true);
       const { data } = await axios.get(`${BACKEND_URL}/api/v1/content`, {
         headers: { Authorization: localStorage.getItem("token") ?? "" },
@@ -106,6 +112,7 @@ function Dashboard() {
       if (replace) setCards([]);
       setHasMore(false);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
   };
@@ -119,9 +126,10 @@ function Dashboard() {
   useEffect(() => {
     const handleScroll = () => {
       const nearBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+        window.innerHeight + window.scrollY >=
+        document.body.offsetHeight - SCROLL_LOAD_OFFSET;
 
-      if (nearBottom && hasMore && !loading && !searchMode) {
+      if (nearBottom && hasMore && !loadingRef.current && !searchMode) {
         setPage((prev) => prev + 1);
       }
     };
@@ -138,6 +146,16 @@ function Dashboard() {
 
     fetchCards(page, false);
   }, [page]);
+
+  useEffect(() => {
+    const nearBottom =
+      window.innerHeight + window.scrollY >=
+      document.body.offsetHeight - SCROLL_LOAD_OFFSET;
+
+    if (nearBottom && hasMore && !loadingRef.current && !searchMode) {
+      setPage((prev) => prev + 1);
+    }
+  }, [cards.length, hasMore, loading, searchMode]);
 
   const requestDelete = (id: string) => {
     const card = cards.find((c) => (c._id ?? c.link) === id);
@@ -234,7 +252,7 @@ function Dashboard() {
           Modal={
             <CreateContentModal
               onClose={() => setModalOpen(false)}
-              onContentAdded={() =>{
+              onContentAdded={() => {
                 setPage(1);
                 fetchCards(1, true);
               }}
@@ -301,11 +319,9 @@ function Dashboard() {
         </div>
 
         {loading && (
-          <div className="text-white text-center py-6">Loading...</div>
-        )}
-
-        {!loading && !hasMore && cards.length > 0 && !searchMode && (
-          <div className="text-gray-400 text-center py-6">No more content</div>
+          <div className="flex justify-center py-6">
+            <LoaderCircle className="h-7 w-7 animate-spin text-[#C4C2FF]" />
+          </div>
         )}
 
         {/* Delete confirmation modal */}
