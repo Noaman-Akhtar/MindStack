@@ -30,6 +30,7 @@ type Content = {
 
 const CONTENT_PAGE_LIMIT = 6;
 const SCROLL_LOAD_OFFSET = 500;
+const DEBUG_PAGINATION = false;
 
 type DashboardNavProps = {
   scrolled: boolean;
@@ -71,6 +72,7 @@ function Dashboard() {
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
   const loadingRef = useRef(false);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [search, setSearch] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
@@ -96,6 +98,13 @@ function Dashboard() {
     try {
       loadingRef.current = true;
       setLoading(true);
+      if (DEBUG_PAGINATION) {
+        console.log("[pagination] fetching", {
+          page: pageToFetch,
+          replace,
+          filter,
+        });
+      }
       const { data } = await axios.get(`${BACKEND_URL}/api/v1/content`, {
         headers: { Authorization: localStorage.getItem("token") ?? "" },
         params: {
@@ -108,6 +117,15 @@ function Dashboard() {
 
       setCards((prev) => (replace ? newCards : [...prev, ...newCards]));
       setHasMore(data?.hasMore ?? false);
+      if (DEBUG_PAGINATION) {
+        console.log("[pagination] response", {
+          requestedPage: pageToFetch,
+          received: newCards.length,
+          hasMore: data?.hasMore,
+          totalItems: data?.totalItems,
+          totalPages: data?.totalPages,
+        });
+      }
     } catch {
       if (replace) setCards([]);
       setHasMore(false);
@@ -124,37 +142,40 @@ function Dashboard() {
     fetchCards(1, true);
   }, [filter]);
   useEffect(() => {
-    const handleScroll = () => {
-      const nearBottom =
-        window.innerHeight + window.scrollY >=
-        document.body.offsetHeight - SCROLL_LOAD_OFFSET;
-
-      if (nearBottom && hasMore && !loadingRef.current && !searchMode) {
-        setPage((prev) => prev + 1);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [hasMore, loading, searchMode]);
-
-  useEffect(() => {
     if (page === 1) return;
 
     fetchCards(page, false);
   }, [page]);
 
   useEffect(() => {
-    const nearBottom =
-      window.innerHeight + window.scrollY >=
-      document.body.offsetHeight - SCROLL_LOAD_OFFSET;
+    const loader = loaderRef.current;
+    if (!loader) return;
 
-    if (nearBottom && hasMore && !loadingRef.current && !searchMode) {
-      setPage((prev) => prev + 1);
-    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (DEBUG_PAGINATION) {
+          console.log("[pagination] sentinel", {
+            isIntersecting: entry.isIntersecting,
+            hasMore,
+            loading: loadingRef.current,
+            searchMode,
+          });
+        }
+
+        if (entry.isIntersecting && hasMore && !loadingRef.current && !searchMode) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        root: null,
+        rootMargin: `${SCROLL_LOAD_OFFSET}px`,
+        threshold: 0,
+      },
+    );
+
+    observer.observe(loader);
+
+    return () => observer.disconnect();
   }, [cards.length, hasMore, loading, searchMode]);
 
   const requestDelete = (id: string) => {
@@ -323,6 +344,8 @@ function Dashboard() {
             <LoaderCircle className="h-7 w-7 animate-spin text-[#C4C2FF]" />
           </div>
         )}
+
+        {!searchMode && <div ref={loaderRef} className="h-8" />}
 
         {/* Delete confirmation modal */}
         <DeleteConfirmModal
