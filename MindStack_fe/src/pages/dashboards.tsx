@@ -38,14 +38,18 @@ type DashboardNavProps = {
   onSearch: () => void;
 };
 
-function DashboardNav({ scrolled, onAddContent, onSearch }: DashboardNavProps) {
+function DashboardNav({
+  scrolled,
+  onAddContent,
+  onSearch,
+}: DashboardNavProps) {
   return (
     <div
       className={`fixed top-0 right-0 left-0 z-20 flex items-center justify-end gap-2 py-2 pt-4 sm:gap-5 transition-all duration-300 bg-[#0F0F1A] px-4 ${
         scrolled ? "border-b border-gray-800" : "border-b border-transparent"
       }`}
     >
-      <div className="flex justify-end sm:gap-5 gap-2">
+      <div className="flex items-center justify-end sm:gap-5 gap-2">
         <input
           placeholder="Search"
           className="px-2 py-2 p-1 rounded-xl border-1 border-[#C4C2FF]  sm:text-base  text-[#C4C2FF] w-28 sm:w-56 focus:outline-none"
@@ -79,6 +83,7 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Content[]>([]);
   const [scrolled, setScrolled] = useState(false);
+  const [username, setUsername] = useState("");
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
     title: string;
@@ -90,6 +95,24 @@ function Dashboard() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const { data } = await axios.get(`${BACKEND_URL}/api/v1/me`, {
+          headers: { Authorization: localStorage.getItem("token") ?? "" },
+        });
+
+        if (data?.username) {
+          setUsername(data.username);
+        }
+      } catch (error) {
+        console.error("Failed to load current user", error);
+      }
+    };
+
+    fetchCurrentUser();
   }, []);
 
   const fetchCards = async (pageToFetch = 1, replace = false) => {
@@ -246,6 +269,7 @@ function Dashboard() {
         setExtended={setExtended}
         onSelectType={(f: Filter) => setFilter(f)}
         active={filter}
+        username={username}
       />
 
       {/* Main content  */}

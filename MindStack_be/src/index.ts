@@ -89,6 +89,7 @@ app.post("/api/v1/signin", async (req, res) => {
 
         res.json({
             token,
+            username: existingUser.name,
         });
         return;
         }
@@ -97,6 +98,19 @@ app.post("/api/v1/signin", async (req, res) => {
          res.status(403).json({ message: "Incorrect credentials" });
         return;
     } 
+});
+
+app.get("/api/v1/me", middleware, async (req, res) => {
+    const user = await UserModel.findById(req.userId).select("name");
+
+    if (!user) {
+        res.status(404).json({ message: "User not found" });
+        return;
+    }
+
+    res.json({
+        username: user.name,
+    });
 });
 
 app.post("/api/v1/content", middleware, async (req, res) => {

@@ -16,15 +16,18 @@ export function Sidebar({
   setExtended,
   onSelectType,
   active,
+  username,
 }: {
   extended: boolean;
   setExtended: (v: boolean) => void;
   onSelectType: (f: Filter) => void;
   active: Filter;
+  username: string;
 }) {
   const navigate = useNavigate();
   const [showToggle, setShowToggle] = useState(!extended);
   const [mobileView, setMobileView] = useState(false);
+  const userInitial = username.trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
     if (extended) {
@@ -108,11 +111,41 @@ export function Sidebar({
                 Random
               </div>
             </div>
-            <div
-              className="mt-auto mb-6 p-3 rounded-md cursor-pointer text-lg text-gray-400"
-              onClick={handleLogout}
-            >
-              Logout
+            <div className="mt-auto mb-6 flex items-center justify-between  p-3">
+              <div className="group relative flex min-w-0 items-center gap-2">
+                <button
+                  type="button"
+                  title={username || "Account"}
+                  aria-label={username || "Account"}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C4C2FF]/40 bg-[#303060] text-base font-semibold text-[#C4C2FF]"
+                >
+                  {userInitial}
+                </button>
+                {username && (
+                  <span className="max-w-40 truncate text-sm font-medium text-gray-300">
+                    {username}
+                  </span>
+                )}
+                {username && (
+                  <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {username}
+                  </div>
+                )}
+              </div>
+              <div className="group relative">
+                <button
+                  type="button"
+                  title="Logout"
+                  aria-label="Logout"
+                  onClick={handleLogout}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  <LogOut className="h-6 w-6" />
+                </button>
+                <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                  Logout
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -168,8 +201,35 @@ export function Sidebar({
             </div>
           </div>
 
-          <div className="mt-auto mb-6" onClick={handleLogout}>
-            <SidebarItem text="Logout" icon={<LogOut className="w-6 h-6" />} />
+          <div className="mt-auto mb-6 flex items-center justify-between px-5">
+            <div className="group relative flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-[#C4C2FF]/40 bg-[#303060] text-base font-semibold text-[#C4C2FF] transition-colors hover:bg-[#3E3B6D]"
+              >
+                {userInitial}
+              </button>
+              {username && (
+                <span className="max-w-36 truncate text-sm font-medium text-[#C4C2FF]">
+                  {username}
+                </span>
+              )}
+              
+            </div>
+            <div className="group relative">
+              <button
+                type="button"
+                title="Logout"
+                aria-label="Logout"
+                onClick={handleLogout}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-[#C4C2FF] transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <LogOut className="h-6 w-6" />
+              </button>
+              <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+                Logout
+              </div>
+            </div>
           </div>
         </div>
         {showToggle && (
