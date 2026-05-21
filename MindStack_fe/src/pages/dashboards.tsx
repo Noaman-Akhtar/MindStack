@@ -27,6 +27,8 @@ type Content = {
   score: number | undefined;
 };
 
+const CONTENT_PAGE_LIMIT = 12;
+
 type DashboardNavProps = {
   scrolled: boolean;
   onAddContent: () => void;
@@ -63,6 +65,9 @@ function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [extended, setExtended] = useState(true);
   const [cards, setCards] = useState<Content[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [search, setSearch] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
@@ -82,20 +87,57 @@ function Dashboard() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const fetchCards = async () => {
+  const fetchCards = async (pageToFetch = 1, replace = false) => {
     try {
+      setLoading(true);
       const { data } = await axios.get(`${BACKEND_URL}/api/v1/content`, {
         headers: { Authorization: localStorage.getItem("token") ?? "" },
+        params: {
+          page: pageToFetch,
+          limit: CONTENT_PAGE_LIMIT,
+          type: filter,
+        },
       });
-      setCards(data?.content ?? []);
+      const newCards = data?.content ?? [];
+
+      setCards((prev) => (replace ? newCards : [...prev, ...newCards]));
+      setHasMore(data?.hasMore ?? false);
     } catch {
-      setCards([]);
+      if (replace) setCards([]);
+      setHasMore(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCards();
-  }, []);
+    setPage(1);
+    setCards([]);
+    setHasMore(true);
+    fetchCards(1, true);
+  }, [filter]);
+  useEffect(() => {
+    const handleScroll = () => {
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+
+      if (nearBottom && hasMore && !loading && !searchMode) {
+        setPage((prev) => prev + 1);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [hasMore, loading, searchMode]);
+
+  useEffect(() => {
+    if (page === 1) return;
+
+    fetchCards(page, false);
+  }, [page]);
 
   const requestDelete = (id: string) => {
     const card = cards.find((c) => (c._id ?? c.link) === id);
@@ -145,13 +187,10 @@ function Dashboard() {
     setSearchResults([]);
   };
 
-  const visibleCards = cards.filter((c) =>
-    filter === "all" ? true : c.type === filter,
-  );
   const filteredSearchResults = searchMode
     ? searchResults.filter((c) => (filter === "all" ? true : c.type === filter))
     : [];
-  const listToRender = searchMode ? filteredSearchResults : visibleCards;
+  const listToRender = searchMode ? filteredSearchResults : cards;
 
   const viewingContent = cards.find((c) => c._id === viewingId) || null;
   return (
@@ -195,7 +234,10 @@ function Dashboard() {
           Modal={
             <CreateContentModal
               onClose={() => setModalOpen(false)}
-              onContentAdded={fetchCards}
+              onContentAdded={() =>{
+                setPage(1);
+                fetchCards(1, true);
+              }}
             />
           }
         />
@@ -257,6 +299,14 @@ function Dashboard() {
             />
           ))}
         </div>
+
+        {loading && (
+          <div className="text-white text-center py-6">Loading...</div>
+        )}
+
+        {!loading && !hasMore && cards.length > 0 && !searchMode && (
+          <div className="text-gray-400 text-center py-6">No more content</div>
+        )}
 
         {/* Delete confirmation modal */}
         <DeleteConfirmModal
