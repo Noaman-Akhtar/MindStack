@@ -15,7 +15,18 @@ mongoose.connection.on('error', (err) => {
 });
 const UserSchema = new Schema({
   name: { type: String,unique:true, required: true },
-  password: { type: String, required: true}, 
+  email: { type: String, unique: true, sparse: true, required: true, lowercase: true, trim: true },
+  password: { type: String},
+   provider: {
+    type: String,
+    enum: ["credentials", "google"],
+    default: "credentials",
+  },
+  emailVerified: { type: Boolean, default: false },
+  emailVerificationTokenHash: { type: String },
+  emailVerificationExpiresAt: { type: Date },
+  resetPasswordTokenHash: { type: String },
+  resetPasswordExpiresAt: { type: Date },
 });
 export const UserModel = model('User', UserSchema);
 

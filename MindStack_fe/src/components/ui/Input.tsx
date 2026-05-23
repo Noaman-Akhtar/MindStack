@@ -1,5 +1,5 @@
 interface InputProps{
-    type: "text" | "password";
+    type: "text" | "password" | "email";
     variant:"primary"|"secondary";
     onChange?:(e:React.ChangeEvent<HTMLInputElement>)=> void ;
     placeholder:string;

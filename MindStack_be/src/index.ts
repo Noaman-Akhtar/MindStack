@@ -29,6 +29,15 @@ const signupSchema = z.object({
     username: z.string().min(3,"Username must be at least 3 characters long")
     .max(30,"Username must be at most 30 characters long")
     .regex(/^[a-zA-Z0-9_]+$/,"Username can only contain letters, numbers, and underscores"),
+    email: z.string().email("Please enter a valid email address"),
+    password:z.string().min(6,"Password must be at least 6 characters long")
+    .max(100,"Password must be at most 100 characters long"),
+})
+
+const signinSchema = z.object({
+    username: z.string().min(3,"Username must be at least 3 characters long")
+    .max(30,"Username must be at most 30 characters long")
+    .regex(/^[a-zA-Z0-9_]+$/,"Username can only contain letters, numbers, and underscores"),
     password:z.string().min(6,"Password must be at least 6 characters long")
     .max(100,"Password must be at most 100 characters long"),
 })
@@ -41,24 +50,31 @@ app.post("/api/v1/signup", async (req, res) => {
         res.status(400).json({ message: "Invalid input", errors });
         return;
     }
-    const {username,password} = parseResult.data;
+    const {username,email,password} = parseResult.data;
     
 
     try {
-        const existingUser = await UserModel.findOne({ name: username });
+        const existingUser = await UserModel.findOne({
+            $or: [{ name: username }, { email: email.toLowerCase() }],
+        });
         if (existingUser) {
-            res.status(409).json({ message: "Username already taken" });
+            res.status(409).json({
+                message: existingUser.email === email.toLowerCase()
+                    ? "Email already taken"
+                    : "Username already taken",
+            });
             return;
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         await UserModel.create({
             name: username,
+            email,
             password: hashedPassword,
         });
         res.json({ message: "User created successfully" });
     } catch (error:any) {
         if (error.code === 11000) {
-            res.status(409).json({ message: "Username already taken" });
+            res.status(409).json({ message: "Username or email already taken" });
         } else {
             res.status(500).json({ message: "Error creating user" });
         }
@@ -66,7 +82,7 @@ app.post("/api/v1/signup", async (req, res) => {
 });
 
 app.post("/api/v1/signin", async (req, res) => {
-    const parseResult = signupSchema.safeParse(req.body);
+    const parseResult = signinSchema.safeParse(req.body);
     if(!parseResult.success){
         const errors = parseResult.error.issues.map((e) => e.message);
         res.status(400).json({ message: "Invalid input", errors });
@@ -77,7 +93,7 @@ app.post("/api/v1/signin", async (req, res) => {
         name: username
     });
     try{
-        if (existingUser) {
+        if (existingUser && existingUser.password) {
         const passwordMatch = await bcrypt.compare(password,existingUser.password);
         if(passwordMatch){
             const token = jwt.sign(
