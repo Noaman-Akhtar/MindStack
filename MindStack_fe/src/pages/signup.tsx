@@ -66,10 +66,15 @@ export function Signup() {
   }
 
   return (
-    <div className="signup-bg h-screen w-screen bg-black flex justify-center items-center">
+    <div className="signup-bg h-screen w-screen bg-black flex justify-center items-center px-4">
       <div className="blur-ellipse"></div>
-      <div className="fixed max-w-82 m-2 w-full border border-gray-300/20 shadow-md bg-[#303060]/20 rounded-lg p-6">
-        <div className="flex flex-col mt-6 gap-y-8">
+      <div className="fixed w-full max-w-90 border border-gray-300/20 shadow-xl bg-[#303060]/20 rounded-lg p-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold text-white">Create account</h1>
+          <p className="mt-1 text-sm text-gray-400">Start saving your ideas in MindStack</p>
+        </div>
+
+        <div className="flex flex-col gap-y-6">
           <div>
             <Input
               variant="secondary"
@@ -107,7 +112,7 @@ export function Signup() {
           </div>
         </div>
 
-        <div className="flex justify-center items-center mt-12">
+        <div className="flex justify-center items-center mt-8">
           <Button
             variant="primary"
             text="Signup"
@@ -117,10 +122,10 @@ export function Signup() {
           />
         </div>
 
-        <div className="mt-2 flex justify-center items-center text-gray-400">
+        <div className="mt-4 flex justify-center items-center text-sm text-gray-400">
           Already have an account?{" "}
           <span
-            className="text-blue-500 cursor-pointer ml-2"
+            className="text-blue-400 hover:text-blue-300 cursor-pointer ml-2"
             onClick={() => navigate("/signin")}
           >
             Signin

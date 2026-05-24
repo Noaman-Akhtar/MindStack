@@ -53,48 +53,70 @@ export function Signin() {
     }
   }
   return (
-       <div className=" signup-bg h-screen w-screen bg-black flex justify-center items-center">
-            <div className="blur-ellipse"></div>
-            <div className="fixed max-w-82 m-2 w-full border border-gray-300/20 shadow-md bg-[#303060]/20 rounded-lg p-6 ">
-                <div className="flex flex-col  mt-6 gap-y-10">
-                    <div>
-                      <Input
-                        variant="secondary"
-                        ref={emailRef}
-                        placeholder="Email"
-                        type="email"
-                        onChange={() => {
-                          setError([]);
-                          setFieldErrors((prev) => ({ ...prev, email: undefined }));
-                        }}
-                      />
-                      {fieldErrors.email && (
-                        <div className="mt-1 text-xs text-red-400">{fieldErrors.email}</div>
-                      )}
-                    </div>
+    <div className="signup-bg h-screen w-screen bg-black flex justify-center items-center px-4">
+      <div className="blur-ellipse"></div>
+      <div className="fixed w-full max-w-90 border border-gray-300/20 shadow-xl bg-[#303060]/20 rounded-lg p-6">
+        <div className="mb-8 text-center">
+          <h1 className="text-2xl font-semibold text-white">Welcome back</h1>
+          <p className="mt-1 text-sm text-gray-400">Sign in to continue to MindStack</p>
+        </div>
 
-                    <div>
-                      <Input
-                        variant="secondary"
-                        ref={passwordRef}
-                        placeholder="Password"
-                        type="password"
-                        onChange={() => {
-                          setError([]);
-                          setFieldErrors((prev) => ({ ...prev, password: undefined }));
-                        }}
-                      />
-                      {fieldErrors.password && (
-                        <div className="mt-1 text-xs text-red-400">{fieldErrors.password}</div>
-                      )}
-                    </div>
-                </div>
-                <div className="flex justify-center items-center mt-15">
-                    <Button variant="primary" text="Signin" size="full" onClick={signin} loading={false} />
-                </div>
-                <div className="mt-2 flex justify-center items-center text-gray-400">
-                    Don't have an account? <span className="text-blue-500 cursor-pointer ml-2" onClick={() => navigate("/signup")}>Signup</span>
-                </div>
+        <div className="flex flex-col gap-y-6">
+          <div>
+            <Input
+              variant="secondary"
+              ref={emailRef}
+              placeholder="Email"
+              type="email"
+              onChange={() => {
+                setError([]);
+                setFieldErrors((prev) => ({ ...prev, email: undefined }));
+              }}
+            />
+            {fieldErrors.email && (
+              <div className="mt-1 text-xs text-red-400">{fieldErrors.email}</div>
+            )}
+          </div>
+
+          <div>
+            <Input
+              variant="secondary"
+              ref={passwordRef}
+              placeholder="Password"
+              type="password"
+              onChange={() => {
+                setError([]);
+                setFieldErrors((prev) => ({ ...prev, password: undefined }));
+              }}
+            />
+            {fieldErrors.password && (
+              <div className="mt-1 text-xs text-red-400">
+                {fieldErrors.password}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex justify-center items-center mt-8">
+          <Button
+            variant="primary"
+            text="Signin"
+            size="full"
+            onClick={signin}
+            loading={false}
+          />
+        </div>
+
+        <div className="mt-4 flex justify-center items-center text-sm text-gray-400">
+          Don't have an account?
+          <span
+            className="text-blue-400 hover:text-blue-300 cursor-pointer ml-2"
+            onClick={() => navigate("/signup")}
+          >
+            Signup
+          </span>
+        </div>
+
         {error.length > 0 && (
           <div className="mt-4 rounded-md border border-red-500/40 bg-red-500/10 p-3">
             <ul className="list-disc list-inside text-red-400 text-sm space-y-1">
