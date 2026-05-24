@@ -26,18 +26,13 @@ app.use(cors());
 const saltRounds=10;
 
 const signupSchema = z.object({
-    username: z.string().min(3,"Username must be at least 3 characters long")
-    .max(30,"Username must be at most 30 characters long")
-    .regex(/^[a-zA-Z0-9_]+$/,"Username can only contain letters, numbers, and underscores"),
     email: z.string().email("Please enter a valid email address"),
     password:z.string().min(6,"Password must be at least 6 characters long")
     .max(100,"Password must be at most 100 characters long"),
 })
 
 const signinSchema = z.object({
-    username: z.string().min(3,"Username must be at least 3 characters long")
-    .max(30,"Username must be at most 30 characters long")
-    .regex(/^[a-zA-Z0-9_]+$/,"Username can only contain letters, numbers, and underscores"),
+    email: z.string().email("Please enter a valid email address"),
     password:z.string().min(6,"Password must be at least 6 characters long")
     .max(100,"Password must be at most 100 characters long"),
 })
@@ -50,31 +45,24 @@ app.post("/api/v1/signup", async (req, res) => {
         res.status(400).json({ message: "Invalid input", errors });
         return;
     }
-    const {username,email,password} = parseResult.data;
+    const {email,password} = parseResult.data;
     
 
     try {
-        const existingUser = await UserModel.findOne({
-            $or: [{ name: username }, { email: email.toLowerCase() }],
-        });
+        const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
         if (existingUser) {
-            res.status(409).json({
-                message: existingUser.email === email.toLowerCase()
-                    ? "Email already taken"
-                    : "Username already taken",
-            });
+            res.status(409).json({ message: "Email already taken" });
             return;
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         await UserModel.create({
-            name: username,
             email,
             password: hashedPassword,
         });
         res.json({ message: "User created successfully" });
     } catch (error:any) {
         if (error.code === 11000) {
-            res.status(409).json({ message: "Username or email already taken" });
+            res.status(409).json({ message: "Email already taken" });
         } else {
             res.status(500).json({ message: "Error creating user" });
         }
@@ -88,9 +76,9 @@ app.post("/api/v1/signin", async (req, res) => {
         res.status(400).json({ message: "Invalid input", errors });
         return;
     }
-    const {username,password} = parseResult.data;
+    const {email,password} = parseResult.data;
     const existingUser = await UserModel.findOne({
-        name: username
+        email: email.toLowerCase()
     });
     try{
         if (existingUser && existingUser.password) {
@@ -105,7 +93,7 @@ app.post("/api/v1/signin", async (req, res) => {
 
         res.json({
             token,
-            username: existingUser.name,
+            email: existingUser.email,
         });
         return;
         }
@@ -117,7 +105,7 @@ app.post("/api/v1/signin", async (req, res) => {
 });
 
 app.get("/api/v1/me", middleware, async (req, res) => {
-    const user = await UserModel.findById(req.userId).select("name");
+    const user = await UserModel.findById(req.userId).select("email");
 
     if (!user) {
         res.status(404).json({ message: "User not found" });
@@ -125,7 +113,7 @@ app.get("/api/v1/me", middleware, async (req, res) => {
     }
 
     res.json({
-        username: user.name,
+        email: user.email,
     });
 });
 
@@ -192,7 +180,7 @@ app.get("/api/v1/content", middleware, async (req, res) => {
     .sort({_id:-1})
     .skip(skip)
     .limit(limit)
-    .populate("userId","username");
+    .populate("userId","email");
 
     const totalItems = await ContentModel.countDocuments(query);
     const totalPages = Math.ceil(totalItems /limit);
@@ -344,7 +332,7 @@ app.get("/api/v1/brain/:shareLink", async (req, res) => {
         return;
     }
     res.json({
-        username: user.name,
+        email: user.email,
         content: content,
     });
 });

@@ -7,12 +7,10 @@ import { useNavigate } from "react-router-dom";
 
 export function Signup() {
   const navigate = useNavigate();
-  const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string[]>([]);
   const [fieldErrors, setFieldErrors] = useState<{
-    username?: string;
     email?: string;
     password?: string;
   }>({});
@@ -28,17 +26,14 @@ export function Signup() {
     setError([]);
     setFieldErrors({});
 
-    const username = usernameRef.current?.value.trim();
     const email = emailRef.current?.value.trim();
     const password = passwordRef.current?.value;
 
     const nextFieldErrors: {
-      username?: string;
       email?: string;
       password?: string;
     } = {};
 
-    if (!username) nextFieldErrors.username = "Username is required";
     if (!email) nextFieldErrors.email = "Email is required";
     if (!password) nextFieldErrors.password = "Password is required";
 
@@ -49,7 +44,6 @@ export function Signup() {
 
     try {
       await axios.post(BACKEND_URL + "/api/v1/signup", {
-        username,
         email,
         password,
       });
@@ -76,24 +70,6 @@ export function Signup() {
       <div className="blur-ellipse"></div>
       <div className="fixed max-w-82 m-2 w-full border border-gray-300/20 shadow-md bg-[#303060]/20 rounded-lg p-6">
         <div className="flex flex-col mt-6 gap-y-8">
-          <div>
-            <Input
-              variant="secondary"
-              ref={usernameRef}
-              placeholder="UserName"
-              type="text"
-              onChange={() => {
-                setError([]);
-                setFieldErrors((prev) => ({ ...prev, username: undefined }));
-              }}
-            />
-            {fieldErrors.username && (
-              <div className="mt-1 text-xs text-red-400">
-                {fieldErrors.username}
-              </div>
-            )}
-          </div>
-
           <div>
             <Input
               variant="secondary"

@@ -7,10 +7,10 @@ import { useNavigate } from "react-router-dom";
 
 export function Signin() {
   const navigate = useNavigate();
-  const usernameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string[]>([]);
-  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -20,11 +20,11 @@ export function Signin() {
   async function signin() {
     setError([]);
     setFieldErrors({});
-    const username = usernameRef.current?.value.trim();
+    const email = emailRef.current?.value.trim();
     const password = passwordRef.current?.value;
 
-    const nextFieldErrors: { username?: string; password?: string } = {};
-    if (!username) nextFieldErrors.username = "Username is required";
+    const nextFieldErrors: { email?: string; password?: string } = {};
+    if (!email) nextFieldErrors.email = "Email is required";
     if (!password) nextFieldErrors.password = "Password is required";
     if (Object.keys(nextFieldErrors).length > 0) {
       setFieldErrors(nextFieldErrors);
@@ -33,7 +33,7 @@ export function Signin() {
 
     try {
       const response = await axios.post(BACKEND_URL + "/api/v1/signin", {
-        username,
+        email,
         password,
       });
       const jwt = response.data.token;
@@ -60,16 +60,16 @@ export function Signin() {
                     <div>
                       <Input
                         variant="secondary"
-                        ref={usernameRef}
-                        placeholder="UserName"
-                        type="text"
+                        ref={emailRef}
+                        placeholder="Email"
+                        type="email"
                         onChange={() => {
                           setError([]);
-                          setFieldErrors((prev) => ({ ...prev, username: undefined }));
+                          setFieldErrors((prev) => ({ ...prev, email: undefined }));
                         }}
                       />
-                      {fieldErrors.username && (
-                        <div className="mt-1 text-xs text-red-400">{fieldErrors.username}</div>
+                      {fieldErrors.email && (
+                        <div className="mt-1 text-xs text-red-400">{fieldErrors.email}</div>
                       )}
                     </div>
 

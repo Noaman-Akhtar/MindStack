@@ -14,7 +14,6 @@ mongoose.connection.on('error', (err) => {
   console.error('MongoDB connection error:', err);
 });
 const UserSchema = new Schema({
-  name: { type: String,unique:true, required: true },
   email: { type: String, unique: true, sparse: true, required: true, lowercase: true, trim: true },
   password: { type: String},
    provider: {

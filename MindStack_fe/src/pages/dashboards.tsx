@@ -83,7 +83,7 @@ function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Content[]>([]);
   const [scrolled, setScrolled] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
     title: string;
@@ -104,8 +104,8 @@ function Dashboard() {
           headers: { Authorization: localStorage.getItem("token") ?? "" },
         });
 
-        if (data?.username) {
-          setUsername(data.username);
+        if (data?.email) {
+          setEmail(data.email);
         }
       } catch (error) {
         console.error("Failed to load current user", error);
@@ -269,7 +269,7 @@ function Dashboard() {
         setExtended={setExtended}
         onSelectType={(f: Filter) => setFilter(f)}
         active={filter}
-        username={username}
+        email={email}
       />
 
       {/* Main content  */}

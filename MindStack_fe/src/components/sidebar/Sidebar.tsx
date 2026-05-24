@@ -16,18 +16,18 @@ export function Sidebar({
   setExtended,
   onSelectType,
   active,
-  username,
+  email,
 }: {
   extended: boolean;
   setExtended: (v: boolean) => void;
   onSelectType: (f: Filter) => void;
   active: Filter;
-  username: string;
+  email: string;
 }) {
   const navigate = useNavigate();
   const [showToggle, setShowToggle] = useState(!extended);
   const [mobileView, setMobileView] = useState(false);
-  const userInitial = username.trim().charAt(0).toUpperCase() || "?";
+  const userInitial = email.trim().charAt(0).toUpperCase() || "?";
 
   useEffect(() => {
     if (extended) {
@@ -115,20 +115,20 @@ export function Sidebar({
               <div className="group relative flex min-w-0 items-center gap-2">
                 <button
                   type="button"
-                  title={username || "Account"}
-                  aria-label={username || "Account"}
+                  title={email || "Account"}
+                  aria-label={email || "Account"}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-[#C4C2FF]/40 bg-[#303060] text-base font-semibold text-[#C4C2FF]"
                 >
                   {userInitial}
                 </button>
-                {username && (
+                {email && (
                   <span className="max-w-40 truncate text-sm font-medium text-gray-300">
-                    {username}
+                    {email}
                   </span>
                 )}
-                {username && (
+                {email && (
                   <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-black/90 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-                    {username}
+                    {email}
                   </div>
                 )}
               </div>
@@ -209,9 +209,9 @@ export function Sidebar({
               >
                 {userInitial}
               </button>
-              {username && (
+              {email && (
                 <span className="max-w-36 truncate text-sm font-medium text-[#C4C2FF]">
-                  {username}
+                  {email}
                 </span>
               )}
               
