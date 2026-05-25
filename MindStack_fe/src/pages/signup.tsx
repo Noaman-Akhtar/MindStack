@@ -71,6 +71,12 @@ export function Signup() {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      signup();
+    }
+  };
+
   return (
     <div className="signup-bg h-screen w-screen bg-black flex justify-center items-center px-4">
       <div className="blur-ellipse"></div>
@@ -91,6 +97,7 @@ export function Signup() {
                 setError([]);
                 setFieldErrors((prev) => ({ ...prev, email: undefined }));
               }}
+              onKeyDown={handleKeyDown}
             />
             {fieldErrors.email && (
               <div className="mt-1 text-xs text-red-400">
@@ -109,6 +116,7 @@ export function Signup() {
                 setError([]);
                 setFieldErrors((prev) => ({ ...prev, password: undefined }));
               }}
+              onKeyDown={handleKeyDown}
             />
             {fieldErrors.password && (
               <div className="mt-1 text-xs text-red-400">

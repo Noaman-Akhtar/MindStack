@@ -2,6 +2,7 @@ interface InputProps{
     type: "text" | "password" | "email";
     variant:"primary"|"secondary";
     onChange?:(e:React.ChangeEvent<HTMLInputElement>)=> void ;
+    onKeyDown?:(e:React.KeyboardEvent<HTMLInputElement>)=> void ;
     placeholder:string;
     ref?:any;
     height?:string;
@@ -18,6 +19,7 @@ export function Input(props: InputProps) {
                 placeholder={props.placeholder} 
                 type={props.type} 
                 onChange={props.onChange}
+                onKeyDown={props.onKeyDown}
                 className={"w-full tracking-wider outline-none border-[1.3px] border-gray-300 focus:border-voilet-900/60 rounded h-10 pl-3 py-1 text-l placeholder:italic transition-colors duration-200"+" "+variantStyles[props.variant]}
 style={props.height?{height:props.height}:undefined}
             />
