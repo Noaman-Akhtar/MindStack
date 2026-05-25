@@ -35,7 +35,7 @@ export const Button = (props: ButtonProps) => {
         ${defaultStyles}
       `}
       onClick={props.onClick}
-      disabled={props.loading}
+      disabled={props.loading || props.disabled}
     >
       {props.startIcon && <span className="flex items-center">{props.startIcon}</span>}
       <span>{props.text}</span>

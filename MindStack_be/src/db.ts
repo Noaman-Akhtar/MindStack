@@ -29,6 +29,12 @@ const UserSchema = new Schema({
 });
 export const UserModel = model('User', UserSchema);
 
+UserModel.collection.dropIndex('name_1').catch((err: any) => {
+  if (err?.codeName !== 'IndexNotFound') {
+    console.warn('Failed to drop legacy User.name index:', err?.message || err);
+  }
+});
+
 
 const DocumentSchema = new Schema({
   name: { type: String, required: true },

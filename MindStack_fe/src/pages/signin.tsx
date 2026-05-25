@@ -10,6 +10,7 @@ export function Signin() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -18,6 +19,8 @@ export function Signin() {
     }
   }, []);
   async function signin() {
+    if (submitting) return;
+
     setError([]);
     setFieldErrors({});
     const email = emailRef.current?.value.trim();
@@ -32,6 +35,7 @@ export function Signin() {
     }
 
     try {
+      setSubmitting(true);
       const response = await axios.post(BACKEND_URL + "/api/v1/signin", {
         email,
         password,
@@ -50,6 +54,8 @@ export function Signin() {
         return;
       }
       setError(["Incorrect credentials"]);
+    } finally {
+      setSubmitting(false);
     }
   }
   return (
@@ -103,7 +109,8 @@ export function Signin() {
             text="Signin"
             size="full"
             onClick={signin}
-            loading={false}
+            loading={submitting}
+            disabled={submitting}
           />
         </div>
 

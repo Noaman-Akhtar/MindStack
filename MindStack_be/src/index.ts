@@ -46,23 +46,29 @@ app.post("/api/v1/signup", async (req, res) => {
         return;
     }
     const {email,password} = parseResult.data;
+    const normalizedEmail = email.toLowerCase();
     
 
     try {
-        const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
+        const existingUser = await UserModel.findOne({ email: normalizedEmail });
         if (existingUser) {
             res.status(409).json({ message: "Email already taken" });
             return;
         }
         const hashedPassword = await bcrypt.hash(password, saltRounds);
         await UserModel.create({
-            email,
+            email: normalizedEmail,
             password: hashedPassword,
         });
-        res.json({ message: "User created successfully" });
+        res.status(201).json({ message: "User created successfully" });
     } catch (error:any) {
         if (error.code === 11000) {
-            res.status(409).json({ message: "Email already taken" });
+            const duplicateField = Object.keys(error.keyPattern || {})[0];
+            res.status(409).json({
+                message: duplicateField === "email"
+                    ? "Email already taken"
+                    : "Account already exists. Please try signing in.",
+            });
         } else {
             res.status(500).json({ message: "Error creating user" });
         }
@@ -76,11 +82,12 @@ app.post("/api/v1/signin", async (req, res) => {
         res.status(400).json({ message: "Invalid input", errors });
         return;
     }
-    const {email,password} = parseResult.data;
-    const existingUser = await UserModel.findOne({
-        email: email.toLowerCase()
-    });
     try{
+        const {email,password} = parseResult.data;
+        const existingUser = await UserModel.findOne({
+            email: email.toLowerCase()
+        });
+
         if (existingUser && existingUser.password) {
         const passwordMatch = await bcrypt.compare(password,existingUser.password);
         if(passwordMatch){
@@ -97,9 +104,12 @@ app.post("/api/v1/signin", async (req, res) => {
         });
         return;
         }
-    } }catch(err){
-    
-         res.status(403).json({ message: "Incorrect credentials" });
+    }
+
+        res.status(403).json({ message: "Incorrect credentials" });
+        return;
+    }catch(err){
+        res.status(500).json({ message: "Error signing in" });
         return;
     } 
 });

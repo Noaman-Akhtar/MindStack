@@ -10,6 +10,7 @@ export function Signup() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{
     email?: string;
     password?: string;
@@ -23,6 +24,8 @@ export function Signup() {
   }, []);
 
   async function signup() {
+    if (submitting) return;
+
     setError([]);
     setFieldErrors({});
 
@@ -43,6 +46,7 @@ export function Signup() {
     }
 
     try {
+      setSubmitting(true);
       await axios.post(BACKEND_URL + "/api/v1/signup", {
         email,
         password,
@@ -62,6 +66,8 @@ export function Signup() {
       }
 
       setError(["Signup failed. Please try again."]);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -118,7 +124,8 @@ export function Signup() {
             text="Signup"
             size="full"
             onClick={signup}
-            loading={false}
+            loading={submitting}
+            disabled={submitting}
           />
         </div>
 
