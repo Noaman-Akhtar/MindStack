@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import axios from 'axios';
+import { BACKEND_URL } from '../../config';
 
 export type ContentDoc = {
     name: string;
@@ -35,7 +36,7 @@ export function CloudinaryUploadWidget({
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string;
     const apiKey = import.meta.env.VITE_CLOUDINARY_API_KEY as string;
     const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string;
-    const backendBase = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:3020';
+    const backendBase = BACKEND_URL;
 
     function mapInfoToDoc(info: any): ContentDoc {
         const name =

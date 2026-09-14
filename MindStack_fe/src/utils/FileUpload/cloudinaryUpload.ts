@@ -1,5 +1,6 @@
 
 import axios from 'axios';
+import { BACKEND_URL } from '../../config';
 
 export interface CloudinaryUploadResult {
     url: string;
@@ -18,8 +19,7 @@ export interface UploadProgressItem {
     abortController?: AbortController;
 }
 
-const BACKEND_BASE =
-    (import.meta.env.VITE_BACKEND_URL as string);
+const BACKEND_BASE = BACKEND_URL;
 
 export async function uploadToCloudinaryWithProgress(
     file: File,
